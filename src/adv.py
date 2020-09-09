@@ -1,4 +1,6 @@
 from room import Room
+from player import Player
+from textwrap import wrap
 
 # Declare all the rooms
 
@@ -39,6 +41,10 @@ room['treasure'].s_to = room['narrow']
 
 # Make a new player object that is currently in the 'outside' room.
 
+player = Player(room['outside'])
+
+CARDINALS = ["n", "e", "s", "w"]
+
 # Write a loop that:
 #
 # * Prints the current room name
@@ -49,3 +55,18 @@ room['treasure'].s_to = room['narrow']
 # Print an error message if the movement isn't allowed.
 #
 # If the user enters "q", quit the game.
+
+while True:
+    print(f"Current room: {player.room.name}")
+    print("Description:")
+    descr = wrap(player.room.description, initial_indent='  ', subsequent_indent='  ', width=64)
+    for d in descr: print(d)
+    do = input()
+    if do in CARDINALS:
+        moved = player.move(do)
+        if not moved:
+            print(f"Unable to move rooms in direction {do}")
+        continue
+
+    if do == "q":
+        break
