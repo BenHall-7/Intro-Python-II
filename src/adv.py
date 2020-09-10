@@ -1,6 +1,8 @@
 from room import Room
 from player import Player
+from item import Item
 from textwrap import wrap
+import os
 
 # Declare all the rooms
 
@@ -18,9 +20,15 @@ the distance, but there is no way across the chasm."""),
     'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
 to north. The smell of gold permeates the air."""),
 
-    'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
+    'treasure': Room(
+        "Treasure Chamber",
+        """You've found the long-lost treasure
 chamber! Sadly, it has already been completely emptied by
-earlier adventurers. The only exit is to the south."""),
+earlier adventurers. The only exit is to the south.""",
+        [
+            Item("Vader's Saber", "What feels to be unlimited power eminates from this weapon"),
+
+        ]),
 }
 
 
@@ -42,31 +50,53 @@ room['treasure'].s_to = room['narrow']
 # Make a new player object that is currently in the 'outside' room.
 
 player = Player(room['outside'])
-
+action_res = []
 CARDINALS = ["n", "e", "s", "w"]
 
-# Write a loop that:
-#
-# * Prints the current room name
-# * Prints the current description (the textwrap module might be useful here).
-# * Waits for user input and decides what to do.
-#
-# If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
-# If the user enters "q", quit the game.
+# clear screen func
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')
 
-while True:
+def print_room():
+    global player
     print(f"Current room: {player.room.name}")
+
     print("Description:")
     descr = wrap(player.room.description, initial_indent='  ', subsequent_indent='  ', width=64)
     for d in descr: print(d)
-    do = input()
-    if do in CARDINALS:
+
+    if len(player.room.items) > 0:
+        print("Items in room:")
+        for item in player.room.items:
+            print(f"- {item}")
+
+def print_action_response():
+    global action_res
+    for l in action_res:
+        print()
+        print(l)
+
+while True:
+    cls()
+    print_room()
+    print_action_response()
+    action_res = []
+
+    do = input("> ")
+    if len(do) == 0:
+        continue
+    elif do in CARDINALS:
         moved = player.move(do)
         if not moved:
-            print(f"Unable to move rooms in direction {do}")
+            action_res.append(f"Unable to move rooms in direction {do}")
         continue
-
-    if do == "q":
+    elif do == "q":
         break
+    elif do == "items":
+        if len(player.items) > 0:
+            action_res.append("Your items:")
+            action_res.extend(f"- {item}" for item in player.items)
+        else:
+            action_res.append("No items")
+    else:
+        action_res.append(f"Invalid command '{do}'")
