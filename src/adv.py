@@ -69,20 +69,26 @@ def print_room():
         print("Items in room:")
         for item in player.room.items:
             print(f"- {item}")
+    
+    print()
 
 def print_action_response():
     global action_res
     for l in action_res:
-        print()
         print(l)
+        print()
+
+def read_input():
+    global action_res
+    action_res = []
+    return input("> ")
 
 while True:
     cls()
     print_room()
     print_action_response()
-    action_res = []
 
-    do = input("> ")
+    do = read_input()
     if len(do) == 0:
         continue
     elif do in CARDINALS:
