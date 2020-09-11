@@ -51,7 +51,6 @@ room['treasure'].s_to = room['narrow']
 
 player = Player(room['outside'])
 action_res = []
-CARDINALS = ["n", "e", "s", "w"]
 
 # clear screen func
 def cls():
@@ -81,7 +80,8 @@ def print_action_response():
 def read_input():
     global action_res
     action_res = []
-    return input("> ")
+    # sanitize inputs by removing empty entries caused by extra spaces
+    return [s for s in input("> ").split(" ") if len(s) > 0]
 
 while True:
     cls()
@@ -89,20 +89,42 @@ while True:
     print_action_response()
 
     do = read_input()
+
     if len(do) == 0:
         continue
-    elif do in CARDINALS:
-        moved = player.move(do)
+    elif do[0] in ["n", "e", "s", "w"]:
+        moved = player.move(do[0])
         if not moved:
-            action_res.append(f"Unable to move rooms in direction {do}")
+            action_res.append(f"Unable to move rooms in direction {do[0]}")
         continue
-    elif do == "q":
+    elif do[0] == "q":
         break
-    elif do == "items":
+    elif do[0] == "items":
         if len(player.items) > 0:
             action_res.append("Your items:")
             action_res.extend(f"- {item}" for item in player.items)
         else:
             action_res.append("No items")
+    elif do[0] in ["get", "take", "drop"]:
+        if len(do) == 1:
+            action_res.append(f"Expected item name. e.g: {do[0]} katana")
+        else:
+            # case-agnostic search
+            item_name = " ".join(do[1:])
+            drop = do[0] == "drop"
+            # decide which list to search (room or player items)
+            # based on if dropping the item
+            search = player.room.items if not drop else player.items
+            item = next((item for item in search if item.name.lower() == item_name.lower()), None)
+            if item == None:
+                action_res.append(f"No weapon with the name '{item_name}' in room")
+            elif drop:
+                player.items.remove(item)
+                player.room.items.append(item)
+                action_res.append(f"Dropped the '{item.name}'")
+            else:
+                player.items.append(item)
+                player.room.items.remove(item)
+                action_res.append(f"Picked up the '{item.name}'")
     else:
-        action_res.append(f"Invalid command '{do}'")
+        action_res.append(f"Invalid command '{do[1]}'")
