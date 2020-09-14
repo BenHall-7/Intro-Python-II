@@ -8,14 +8,8 @@ class Player:
 
     def move(self, direction):
         to = None
-        if direction == "n":
-            to = self.room.n_to
-        elif direction == "e":
-            to = self.room.e_to
-        elif direction == "s":
-            to = self.room.s_to
-        elif direction == "w":
-            to = self.room.w_to
+        if direction in ["n", "e", "s", "w"]:
+            to = self.room.room(direction, self)
         
         if to:
             self.room = to
